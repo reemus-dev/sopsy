@@ -33,11 +33,10 @@ const server = serve({
 console.log("[Sopsy] Started");
 
 exitHook(() => {
-  console.log("[Sopsy] Shutting down");
+  console.log("[Sopsy] Shutting down...");
   void secrets.stop();
   void server.close();
+  console.log("[Sopsy] Shutdown complete");
 });
 
-while (true) {
-  await sleep(1000);
-}
+// while (true) {await sleep(1000);}
