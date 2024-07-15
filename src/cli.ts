@@ -49,15 +49,29 @@ const command: unknown[] = Array.isArray(argv._) ? argv._ : [];
 
 const server = await Sopsy({file, port, hostname, verbose});
 
-exitHook(() => {
+const cancelExitHook = exitHook(() => {
   void server.shutdown();
 });
 
 if (command.length > 0) {
-  await $({
+  const proc = await $({
+    nothrow: true,
     env: {
       ...process.env,
       SOPSY_ADDRESS: server.address,
     },
   })`${command}`;
+
+  // Log the output of the command
+  console.log(proc.text());
+
+  // Shutdown the server and remove the exit hook
+  await server.shutdown();
+  cancelExitHook();
+
+  // Exit with the exit code of the command if it isn't 0
+  const exitCode = proc.exitCode ?? 0;
+  if (exitCode !== 0) {
+    process.exit(exitCode);
+  }
 }
