@@ -34,7 +34,7 @@ tasks:
   run:
     cmds:
       - task: build
-      - ./dist/index.js
+      - ./dist/index.js {{.CLI_ARGS}}
 
   publish: npm publish
   publish:dry-run: npm publish --dry-run --no-git-checks
