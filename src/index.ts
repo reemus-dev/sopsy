@@ -2,37 +2,50 @@
 
 import {Hono} from "hono";
 import {serve} from "@hono/node-server";
-import exitHook from "exit-hook";
 import {SecretsManager} from "./sops.js";
-import {args} from "./args.js";
+import type {SopsyOptions} from "./types.js";
 
-const secrets = await SecretsManager.init();
-const app = new Hono();
+export const Sopsy = async (options: SopsyOptions) => {
+  const file = options.file;
+  const port = options.port;
+  const hostname = options.hostname ?? "localhost";
+  const verbose = options.verbose ?? false;
 
-app.get("/:key", async (c) => {
-  const key = c.req.param("key");
-  console.log(`[Sopsy] GET: ${key}`);
-  const {type, value} = await secrets.getValue(key);
-  if (type === "null") {
-    return c.notFound();
-  }
-  if (type === "scalar") {
-    return c.text(String(value));
-  }
-  return c.json(value as any);
-});
+  const log = verbose ? console.log : () => {};
 
-const server = serve({
-  fetch: app.fetch,
-  hostname: args.hostname,
-  port: args.port,
-});
+  const secrets = await SecretsManager.init(file);
+  const app = new Hono();
 
-console.log("[Sopsy] Started");
+  app.get("/:key", async (c) => {
+    const key = c.req.param("key");
+    log(`[Sopsy] GET: ${key}`);
+    const {type, value} = await secrets.getValue(key);
+    if (type === "null") {
+      return c.notFound();
+    }
+    if (type === "scalar") {
+      return c.text(String(value));
+    }
+    return c.json(value as any);
+  });
 
-exitHook(() => {
-  console.log("[Sopsy] Shutting down...");
-  void secrets.stop();
-  void server.close();
-  console.log("[Sopsy] Shutdown complete");
-});
+  const server = serve({
+    port: port,
+    hostname: hostname,
+    fetch: app.fetch,
+  });
+
+  log("[Sopsy] Started");
+
+  return async () => {
+    log("[Sopsy] Shutting down...");
+    await secrets.stop();
+    await new Promise((resolve) => {
+      server.close(resolve);
+    });
+    log("[Sopsy] Shutdown complete");
+  };
+};
+
+export default Sopsy;
+export type * from "./types.js";

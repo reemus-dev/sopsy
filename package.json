@@ -1,18 +1,24 @@
 {
   "name": "@reemus/sopsy",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "API access to a SOPS encrypted file",
   "type": "module",
   "private": false,
   "sideEffects": false,
   "engines": {
-    "node": ">=20"
+    "node": ">=18"
   },
   "publishConfig": {
     "access": "public"
   },
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js"
+  },
   "bin": {
-    "sopsy": "dist/index.js"
+    "sopsy": "dist/cli.js"
   },
   "files": [
     "dist"

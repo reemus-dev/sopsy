@@ -28,8 +28,8 @@ tasks:
 
   build:
     cmds:
-      - npm exec tsc
       - npm exec tsup
+      - npm exec tsc
 
   run:
     cmds:
