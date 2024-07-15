@@ -35,7 +35,11 @@ export const Sopsy = async (options: SopsyOptions) => {
     fetch: app.fetch,
   });
 
-  log("[Sopsy] Started");
+  log("[Sopsy] Started", {
+    file,
+    hostname,
+    port,
+  });
 
   return {
     host: hostname,
