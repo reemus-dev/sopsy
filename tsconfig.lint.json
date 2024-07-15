@@ -1,0 +1,4 @@
+{
+  "extends": "@booknorder/config-node/tsconfig-eslint.json",
+  "include": ["**/*.ts", "**/*.tsx"]
+}

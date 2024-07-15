@@ -1,0 +1,76 @@
+version: "3"
+set: ["e", "u", "pipefail"]
+interval: 2s
+
+includes: {}
+vars: {}
+env: {}
+
+tasks:
+
+  install:
+    cmds:
+      - rm -f ./npm-shrinkwrap.json
+      - npm install
+      - npm shrinkwrap
+      - task: install:hooks
+      - task: format
+
+  install:hooks:
+    cmds:
+      - npm exec lefthook uninstall
+      - npm exec lefthook install
+
+  format:
+    cmds:
+      - npm exec syncpack format
+      - npm pkg fix
+
+  build:
+    cmds:
+      - npm exec tsc
+      - npm exec tsup
+
+  publish: npm publish
+  publish:dry-run: npm publish --dry-run --no-git-checks
+
+  git:commit:pre:
+    silent: true
+    cmd: |
+      task format
+      task build
+      git add -A .
+
+  git:commit:post:
+    silent: true
+    cmd: |
+      echo "DateTime: $(date)"
+      MSG="$(git log -1 --pretty=format:%s)"
+      
+      if ! echo "$MSG" | grep -E "^(major|minor|patch):"; then
+        exit 0
+      fi
+      
+      if [[ "$MSG" == major:* ]]; then
+        npm version major --no-commit-hooks --no-git-tag-version
+      elif [[ "$MSG" == minor:* ]]; then
+        npm version minor --no-commit-hooks --no-git-tag-version
+      elif [[ "$MSG" == patch:* ]]; then
+        npm version patch --no-commit-hooks --no-git-tag-version
+      fi
+      
+      git add -A .
+      
+      TAGS="$(git tag --sort=version:refname)"
+      VERSION="v$(node -p "require('./package.json').version")"
+      MSG="(${VERSION}) ${MSG}"
+      
+      git commit --amend -m "${MSG}"
+      
+      if echo "$TAGS" | grep -q "${VERSION}"; then
+        echo "Tag: Already exists -> ${VERSION}"
+      else
+        echo "Tag: Create -> ${VERSION}"
+        git tag -a "${VERSION}" -m "${MSG}"
+        task publish
+      fi
