@@ -3,13 +3,19 @@
 import {Hono} from "hono";
 import {serve} from "@hono/node-server";
 import {SecretsManager} from "./sops.js";
-import type {SopsyOptions} from "./types.js";
+
+export type SopsyOptions = {
+  file: string;
+  port: number;
+  hostname?: string | null;
+  verbose?: boolean | null;
+};
 
 export const Sopsy = async (options: SopsyOptions) => {
   const state = {shutdown: false};
   const file = options.file;
   const port = options.port;
-  const hostname = options.hostname ?? "localhost";
+  const hostname = options.hostname ?? "127.0.0.1";
   const verbose = options.verbose ?? false;
 
   const log = verbose ? console.log : () => {};
@@ -19,7 +25,7 @@ export const Sopsy = async (options: SopsyOptions) => {
 
   app.get("/:key", async (c) => {
     const key = c.req.param("key");
-    log(`[Sopsy] GET: ${key}`);
+    log(`[SOPSY] GET: ${key}`);
     const {type, value} = await secrets.getValue(key);
     if (type === "null") {
       return c.notFound();
@@ -36,7 +42,7 @@ export const Sopsy = async (options: SopsyOptions) => {
     fetch: app.fetch,
   });
 
-  log("[Sopsy] Started", {
+  log("[SOPSY] Started", {
     file,
     hostname,
     port,
@@ -49,15 +55,14 @@ export const Sopsy = async (options: SopsyOptions) => {
     shutdown: async () => {
       if (state.shutdown) return;
       state.shutdown = true;
-      log("[Sopsy] Shutting down...");
+      log("[SOPSY] Shutting down...");
       await secrets.stop();
       await new Promise((resolve) => {
         server.close(resolve);
       });
-      log("[Sopsy] Shutdown complete");
+      log("[SOPSY] Shutdown complete");
     },
   };
 };
 
 export default Sopsy;
-export type * from "./types.js";
