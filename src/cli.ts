@@ -44,20 +44,18 @@ const verbose = (() => {
   }
   return Boolean(value);
 })();
-const command = (() => {
-  const value = argv.c || argv.cmd;
-  return typeof value === "string" ? value : null;
-})();
+
+const command: unknown[] = Array.isArray(argv._) ? argv._ : [];
 
 const server = await Sopsy({file, port, hostname, verbose});
 
-if (command) {
+if (command.length > 0) {
   await $({
     env: {
       ...process.env,
       SOPSY_ADDRESS: server.address,
     },
-  })`${command.split(" ")}`;
+  })`${command}`;
 }
 
 exitHook(() => {
