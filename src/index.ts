@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-import {$, sleep} from "zx";
-
 import {Hono} from "hono";
 import {serve} from "@hono/node-server";
 import exitHook from "exit-hook";
@@ -38,5 +36,3 @@ exitHook(() => {
   void server.close();
   console.log("[Sopsy] Shutdown complete");
 });
-
-// while (true) {await sleep(1000);}
