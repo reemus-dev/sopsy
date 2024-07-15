@@ -30,7 +30,7 @@ const port = (() => {
 const hostname = (() => {
   const value = argv.h || argv.hostname || process.env.SOPSY_HOSTNAME;
   if (typeof value === "undefined") {
-    return "localhost";
+    return null;
   }
   if (typeof value !== "string") {
     throw new Error(`Argument -h | --hostname is not a string`);
@@ -39,6 +39,9 @@ const hostname = (() => {
 })();
 const verbose = (() => {
   const value = argv.v || argv.verbose;
+  if (typeof value === "undefined") {
+    return null;
+  }
   return Boolean(value);
 })();
 const command = (() => {
