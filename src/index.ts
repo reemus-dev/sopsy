@@ -37,13 +37,18 @@ export const Sopsy = async (options: SopsyOptions) => {
 
   log("[Sopsy] Started");
 
-  return async () => {
-    log("[Sopsy] Shutting down...");
-    await secrets.stop();
-    await new Promise((resolve) => {
-      server.close(resolve);
-    });
-    log("[Sopsy] Shutdown complete");
+  return {
+    host: hostname,
+    port: port,
+    address: `${hostname}:${port}`,
+    shutdown: async () => {
+      log("[Sopsy] Shutting down...");
+      await secrets.stop();
+      await new Promise((resolve) => {
+        server.close(resolve);
+      });
+      log("[Sopsy] Shutdown complete");
+    },
   };
 };
 

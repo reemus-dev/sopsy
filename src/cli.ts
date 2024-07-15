@@ -49,12 +49,17 @@ const command = (() => {
   return typeof value === "string" ? value : null;
 })();
 
-const shutdown = await Sopsy({file, port, hostname, verbose});
+const server = await Sopsy({file, port, hostname, verbose});
 
 if (command) {
-  await $`${command.split(" ")}`;
+  await $({
+    env: {
+      ...process.env,
+      SOPSY_ADDRESS: server.address,
+    },
+  })`${command.split(" ")}`;
 }
 
 exitHook(() => {
-  void shutdown();
+  void server.shutdown();
 });
