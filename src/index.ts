@@ -6,6 +6,7 @@ import {SecretsManager} from "./sops.js";
 import type {SopsyOptions} from "./types.js";
 
 export const Sopsy = async (options: SopsyOptions) => {
+  const state = {shutdown: false};
   const file = options.file;
   const port = options.port;
   const hostname = options.hostname ?? "localhost";
@@ -46,6 +47,8 @@ export const Sopsy = async (options: SopsyOptions) => {
     port: port,
     address: `${hostname}:${port}`,
     shutdown: async () => {
+      if (state.shutdown) return;
+      state.shutdown = true;
       log("[Sopsy] Shutting down...");
       await secrets.stop();
       await new Promise((resolve) => {

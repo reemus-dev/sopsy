@@ -49,6 +49,10 @@ const command: unknown[] = Array.isArray(argv._) ? argv._ : [];
 
 const server = await Sopsy({file, port, hostname, verbose});
 
+exitHook(() => {
+  void server.shutdown();
+});
+
 if (command.length > 0) {
   await $({
     env: {
@@ -57,7 +61,3 @@ if (command.length > 0) {
     },
   })`${command}`;
 }
-
-exitHook(() => {
-  void server.shutdown();
-});
