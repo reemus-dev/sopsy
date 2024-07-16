@@ -56,13 +56,16 @@ const cancelExitHook = exitHook(() => {
 if (command.length > 0) {
   const proc = await $({
     nothrow: true,
+    quiet: true,
+    verbose: false,
     env: {
       ...process.env,
       SOPSY_ADDRESS: server.address,
     },
   })`${command}`;
 
-  // Log the output of the command
+  const exitCode = proc.exitCode ?? 0;
+
   console.log(proc.text());
 
   // Shutdown the server and remove the exit hook
@@ -70,7 +73,7 @@ if (command.length > 0) {
   cancelExitHook();
 
   // Exit with the exit code of the command if it isn't 0
-  const exitCode = proc.exitCode ?? 0;
+
   if (exitCode !== 0) {
     process.exit(exitCode);
   }
