@@ -45,6 +45,8 @@ const verbose = (() => {
   return Boolean(value);
 })();
 
+const log = verbose ? console.log : () => {};
+
 const command: unknown[] = Array.isArray(argv._) ? argv._ : [];
 
 const server = await Sopsy({file, port, hostname, verbose});
@@ -54,10 +56,15 @@ const cancelExitHook = exitHook(() => {
 });
 
 if (command.length > 0) {
+  const cwd = process.cwd();
+
+  log(`CWD: ${cwd}`);
+
   const proc = await $({
     nothrow: true,
     quiet: true,
     verbose: false,
+    cwd: cwd,
     env: {
       ...process.env,
       SOPSY_ADDRESS: server.address,
