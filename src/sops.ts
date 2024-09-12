@@ -10,8 +10,8 @@ export class SecretsManager {
 
   private constructor(private file: string) {}
 
-  getValue = async (key: string) => {
-    const value = _.get(this.values, key);
+  getValue = async (key?: string) => {
+    const value = !key ? this.values : _.get(this.values, key);
     const type = _.isPlainObject(value)
       ? "object"
       : _.isArray(value)

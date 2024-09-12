@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import {Hono} from "hono";
+import {type Context, Hono} from "hono";
 import {serve} from "@hono/node-server";
 import {SecretsManager} from "./sops.js";
 
@@ -23,9 +23,8 @@ export const Sopsy = async (options: SopsyOptions) => {
   const secrets = await SecretsManager.init(file);
   const app = new Hono();
 
-  app.get("/:key", async (c) => {
-    const key = c.req.param("key");
-    log(`[SOPSY] GET: ${key}`);
+  async function handler(c: Context, key?: string) {
+    log(`[SOPSY] GET: ${key || "$ROOT"}`);
     const {type, value} = await secrets.getValue(key);
     if (type === "null") {
       return c.notFound();
@@ -34,6 +33,16 @@ export const Sopsy = async (options: SopsyOptions) => {
       return c.text(String(value));
     }
     return c.json(value as any);
+  }
+
+  app.get("/", async (c) => {
+    const key = c.req.param("key");
+    return await handler(c, key);
+  });
+
+  app.get("/:key", async (c) => {
+    const key = c.req.param("key");
+    return await handler(c, key);
   });
 
   const server = serve({
