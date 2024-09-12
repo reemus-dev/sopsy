@@ -1,6 +1,6 @@
 {
   "name": "@reemus/sopsy",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "description": "API access to a SOPS encrypted file",
   "type": "module",
   "private": false,
